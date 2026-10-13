@@ -1,0 +1,35 @@
+/* ==========================================================================
+   Brand fonts: the ONE place to change typefaces.
+
+   The identity uses "AB Greater Creation" (Latin display) and "Oymandisa"
+   (Arabic display). Until licensed files are added, the Google Fonts fallbacks
+   loaded in templates/partials/head-assets.php are used instead:
+     Latin display → Italiana   ·   Arabic display → Amiri   ·   Body → Tajawal
+
+   To switch to the brand fonts:
+     1. Put the licensed .woff2 files in /assets/fonts/
+     2. Uncomment the two @font-face blocks below.
+   Nothing else needs to change. The family names are already first in
+   the --font-* stacks.
+   ========================================================================== */
+
+/*
+@font-face {
+  font-family: "AB Greater Creation";
+  src: url("../fonts/greater-creation.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Oymandisa";
+  src: url("../fonts/oymandisa.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+*/
+
+:root {
+  --font-display-latin: "AB Greater Creation", "Italiana", "Didot", Georgia, serif;
+  --font-display-arabic: "Oymandisa", "Amiri", "Times New Roman", serif;
+  --font-body: "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
+}
