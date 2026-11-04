@@ -1313,6 +1313,78 @@ html[dir="rtl"]:active-view-transition-type(backward)::view-transition-new(root)
 .ico-down { width: 16px; height: 16px; transform: rotate(90deg); animation: bob 1.8s var(--ease) infinite; }
 @keyframes bob { 50% { translate: 0 4px; } }
 
+/* ---------- Checkout (demo) ---------- */
+.checkout-page, .thanks-page { padding-block: 18px var(--block); }
+.checkout__title { margin-block: 14px 22px; }
+.checkout-empty { display: grid; justify-items: center; gap: 16px; padding: 48px 0; color: var(--muted); }
+.checkout { display: grid; gap: var(--gap); align-items: start; }
+.checkout__form, .checkout__summary {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(18px, 3vw, 28px);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.checkout__h { font-family: var(--font-display); font-size: var(--fs-h3); color: var(--walnut); font-weight: 700; }
+.site:lang(en) .checkout__h { font-weight: 400; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: .9rem; font-weight: 500; color: var(--walnut-ink); }
+.field input, .field select, .field textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--cream);
+  font: inherit;
+  color: var(--text);
+}
+.field textarea { min-height: 88px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--sage); outline-offset: 1px; border-color: var(--sage-ink); }
+.field .is-invalid, .field input.is-invalid, .field select.is-invalid { border-color: #b3443a; background: #fbefec; }
+.field__error { color: #9c3a31; font-size: .8rem; }
+.pay-option { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--sage-ink); border-radius: var(--r-md); background: rgba(173, 183, 133, .14); }
+.pay-option .ico { width: 28px; height: 28px; color: var(--walnut); }
+.pay-option span { display: grid; line-height: 1.4; }
+.summary-lines { display: grid; gap: 10px; }
+.summary-lines li { display: flex; align-items: center; gap: 10px; font-size: .9rem; }
+.summary-lines li span { flex: 1; min-width: 0; }
+.summary-lines li b { color: var(--walnut); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.summary-lines img { width: 48px; height: 58px; object-fit: cover; border-radius: 10px; }
+.summary-totals { display: grid; gap: 8px; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.summary-totals div { display: flex; justify-content: space-between; gap: 12px; }
+.summary-totals dt { color: var(--muted); }
+.summary-totals dd { margin: 0; font-variant-numeric: tabular-nums; }
+.summary-totals__total { padding-top: 8px; border-top: 1px dashed var(--line); font-size: 1.1rem; }
+.summary-totals__total dt { color: var(--walnut-ink); font-weight: 700; }
+.summary-totals__total dd { color: var(--walnut); font-weight: 700; }
+@media (min-width: 900px) {
+  .checkout { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .checkout__summary { position: sticky; top: calc(var(--header-h) + 24px); }
+}
+
+.thanks {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 34rem;
+  margin: 24px auto 0;
+  padding: clamp(24px, 5vw, 44px);
+  text-align: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+}
+.thanks__seal { width: 76px; }
+.thanks__number { display: grid; gap: 4px; padding: 12px 24px; border-radius: var(--r-md); background: var(--cream); }
+.thanks__number span { font-size: .8rem; color: var(--muted); }
+.thanks__number strong { font-size: 1.4rem; color: var(--walnut); letter-spacing: .04em; }
+.thanks .summary-lines { width: 100%; text-align: start; }
+.thanks__total { display: flex; justify-content: space-between; width: 100%; padding-top: 10px; border-top: 1px solid var(--line); font-weight: 700; color: var(--walnut); }
+.thanks__actions { display: grid; gap: 10px; width: 100%; }
+
 /* ---------- Motion preferences ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

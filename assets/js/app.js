@@ -184,6 +184,98 @@
     /* Section pages: tabs + swipe to the next/previous section */
     var sectionPage = root.querySelector('[data-section-page]');
     if (sectionPage) initSectionSwipe(sectionPage, root);
+
+    /* Demo checkout and thank-you page (nothing is sent anywhere) */
+    var checkoutPage = root.querySelector('[data-checkout-page]');
+    if (checkoutPage) initCheckout(checkoutPage, catalog, i18n, toast);
+    var thanksPage = root.querySelector('[data-thanks-page]');
+    if (thanksPage) initThanks(thanksPage, i18n);
+  }
+
+  var ORDER_KEY = 'joz_last_order';
+
+  // Accept Arabic-Indic digits and spaces as typed on Iraqi phones.
+  function cleanPhone(v) {
+    return (v || '').replace(/[٠-٩]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).replace(/[\s-]/g, '');
+  }
+
+  function initCheckout(page, catalog, i18n, toast) {
+    var form = page.querySelector('[data-checkout-form]');
+    var empty = page.querySelector('[data-checkout-empty]');
+    var linesEl = page.querySelector('[data-summary-lines]');
+    var gov = form.querySelector('[data-governorate]');
+    var deliveryEl = page.querySelector('[data-sum-delivery]');
+    var phoneError = form.querySelector('[data-error="phone"]');
+
+    function lines() {
+      return cart.filter(function (l) { return catalog[l.slug]; }).map(function (l) {
+        var p = catalog[l.slug];
+        return { name: p.name, qty: l.qty, total: p.price * l.qty, img: p.img };
+      });
+    }
+    function fee() {
+      var opt = gov.options[gov.selectedIndex];
+      return opt && opt.value ? +opt.getAttribute('data-fee') : 0;
+    }
+    function render() {
+      var ls = lines();
+      empty.hidden = ls.length > 0;
+      form.hidden = ls.length === 0;
+      var subtotal = ls.reduce(function (n, l) { return n + l.total; }, 0);
+      linesEl.innerHTML = ls.map(function (l) {
+        return '<li><img src="' + esc(l.img) + '" alt="" width="48" height="58"><span>' + esc(l.name) + ' × ' + l.qty + '</span><b>' + fmt(l.total, i18n.currency) + '</b></li>';
+      }).join('');
+      page.querySelector('[data-sum-subtotal]').textContent = fmt(subtotal, i18n.currency);
+      deliveryEl.textContent = gov.value ? fmt(fee(), i18n.currency) : deliveryEl.getAttribute('data-empty');
+      page.querySelector('[data-sum-total]').textContent = fmt(subtotal + fee(), i18n.currency);
+    }
+    listeners.push(render);
+    gov.addEventListener('change', render);
+    render();
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var phone = cleanPhone(form.elements.phone.value);
+      var phoneOk = /^07\d{9}$/.test(phone);
+      phoneError.hidden = phoneOk || !phone;
+      var bad = Array.prototype.filter.call(form.querySelectorAll('[required]'), function (el) { return !el.value.trim(); });
+      if (!phoneOk) bad.push(form.elements.phone);
+      form.querySelectorAll('.is-invalid').forEach(function (el) { el.classList.remove('is-invalid'); });
+      bad.forEach(function (el) { el.classList.add('is-invalid'); });
+      if (bad.length) { toast(i18n.fill); bad[0].focus(); return; }
+
+      var ls = lines();
+      var subtotal = ls.reduce(function (n, l) { return n + l.total; }, 0);
+      var opt = gov.options[gov.selectedIndex];
+      var order = {
+        number: 'JG-' + String(Date.now()).slice(-6),
+        lines: ls.map(function (l) { return { name: l.name, qty: l.qty, total: l.total }; }),
+        subtotal: subtotal, delivery: fee(), total: subtotal + fee(),
+        name: form.elements.name.value.trim(), phone: phone,
+        address: [opt.getAttribute('data-label'), form.elements.area.value.trim(), form.elements.landmark.value.trim()].join('، ')
+      };
+      save(ORDER_KEY, order);
+      setCart([]);
+      window.location.href = form.getAttribute('data-thanks-url');
+    });
+  }
+
+  function initThanks(page, i18n) {
+    var order = load(ORDER_KEY, null);
+    if (!order) return;
+    page.querySelector('[data-order-number]').textContent = order.number;
+    page.querySelector('[data-thanks-lines]').innerHTML = order.lines.map(function (l) {
+      return '<li><span>' + esc(l.name) + ' × ' + l.qty + '</span><b>' + fmt(l.total, i18n.currency) + '</b></li>';
+    }).join('') + '<li><span>' + esc(i18n.delivery) + '</span><b>' + fmt(order.delivery, i18n.currency) + '</b></li>';
+    page.querySelector('[data-thanks-total]').textContent = fmt(order.total, i18n.currency);
+    var wa = page.querySelector('[data-thanks-whatsapp]');
+    var msg = i18n.thIntro + '\n' + i18n.thNumber + ': ' + order.number + '\n' +
+      order.lines.map(function (l) { return '• ' + l.name + ' × ' + l.qty + ' = ' + fmt(l.total, i18n.currency); }).join('\n') +
+      '\n' + i18n.delivery + ': ' + fmt(order.delivery, i18n.currency) +
+      '\n' + i18n.total + ': ' + fmt(order.total, i18n.currency) +
+      '\n' + i18n.thName + ': ' + order.name + ' (' + order.phone + ')' +
+      '\n' + i18n.thAddress + ': ' + order.address;
+    wa.setAttribute('href', wa.getAttribute('href').split('?')[0] + '?text=' + encodeURIComponent(msg));
   }
 
   var VT_KEY = 'joz_vt';
