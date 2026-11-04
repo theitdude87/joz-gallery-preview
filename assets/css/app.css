@@ -1266,6 +1266,53 @@ html[dir="rtl"]:active-view-transition-type(backward)::view-transition-new(root)
   .welcome__links a { width: 96px; font-size: .8rem; }
 }
 
+.btn--wa { background: var(--wa); color: #fff; }
+.btn--wa:hover { background: var(--wa-deep); }
+
+/* ---------- Product page ---------- */
+.product-page { padding-block: 18px var(--block); }
+.pdp { display: grid; gap: clamp(20px, 4vw, 56px); margin-top: 16px; }
+.pdp__stage { position: relative; border-radius: var(--r-xl); overflow: hidden; background: var(--sand); }
+.pdp__stage img { width: 100%; aspect-ratio: 4 / 5; max-width: 100%; object-fit: cover; }
+.pdp__info { display: grid; align-content: start; justify-items: start; gap: 12px; min-width: 0; }
+.pdp__section { font-size: .85rem; color: var(--sage-ink); border-bottom: 1px solid currentColor; }
+.pdp__title { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 700; color: var(--walnut); line-height: 1.2; }
+.site:lang(en) .pdp__title { font-weight: 400; }
+.pdp__price .price__now { font-size: 1.5rem; }
+.pdp__price .price__old { font-size: 1rem; }
+.pdp__actions { display: grid; gap: 10px; width: 100%; max-width: 26rem; margin-top: 6px; }
+.pdp__note { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .9rem; }
+.pdp__note .ico { color: var(--sage-ink); }
+@media (min-width: 900px) {
+  .pdp { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; }
+  .pdp__info { position: sticky; top: calc(var(--header-h) + 24px); padding-top: 12px; }
+}
+
+/* ---------- Auto-advance to the next section at the end of the list ---------- */
+.sec-pager__link--next { position: relative; overflow: hidden; isolation: isolate; }
+.sec-pager__progress {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(173, 183, 133, .35);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+[dir="rtl"] .sec-pager__progress { transform-origin: right; }
+.sec-pager__link--next.is-arming { border-color: var(--sage-ink); }
+.sec-pager__link--next.is-arming .sec-pager__progress { transform: scaleX(1); transition: transform var(--auto-ms, 1400ms) linear; }
+.sec-auto-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: .8rem;
+}
+.ico-down { width: 16px; height: 16px; transform: rotate(90deg); animation: bob 1.8s var(--ease) infinite; }
+@keyframes bob { 50% { translate: 0 4px; } }
+
 /* ---------- Motion preferences ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

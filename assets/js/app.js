@@ -233,6 +233,53 @@
       rememberDirection(forward ? 'forward' : 'backward');
       window.location.href = page.getAttribute(forward ? 'data-next' : 'data-prev');
     }, { passive: true });
+
+    initAutoNext(page, root, rememberDirection);
+  }
+
+  /*
+   * At the end of a section, scrolling on moves to the next one: once the
+   * "next section" button is fully on screen and the visitor keeps scrolling
+   * down, its bar fills and the next section opens. Scrolling up cancels.
+   */
+  function initAutoNext(page, root, remember) {
+    var link = page.querySelector('[data-auto-next]');
+    var hint = page.querySelector('.sec-auto-hint');
+    if (!link) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+      if (hint) hint.hidden = true;
+      return;
+    }
+    var AUTO_MS = 1400, visible = false, timer = null, lastY = window.scrollY, touchY = 0;
+    link.style.setProperty('--auto-ms', AUTO_MS + 'ms');
+
+    function cancel() {
+      if (timer) { clearTimeout(timer); timer = null; }
+      link.classList.remove('is-arming');
+    }
+    function arm() {
+      if (timer || !visible || (root && root.hidden)) return;
+      link.classList.add('is-arming');
+      timer = setTimeout(function () { remember('forward'); window.location.href = link.href; }, AUTO_MS);
+    }
+
+    new IntersectionObserver(function (entries) {
+      visible = entries[0].intersectionRatio >= 0.9;
+      if (!visible) cancel();
+    }, { threshold: [0, 0.9] }).observe(link);
+
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY;
+      if (y < lastY - 2) cancel(); else if (y > lastY) arm();
+      lastY = y;
+    }, { passive: true });
+    // A page too short to scroll: a downward wheel or swipe still counts as "keep going".
+    window.addEventListener('wheel', function (ev) { if (ev.deltaY > 0) arm(); else if (ev.deltaY < 0) cancel(); }, { passive: true });
+    window.addEventListener('touchstart', function (ev) { touchY = ev.touches[0].clientY; }, { passive: true });
+    window.addEventListener('touchmove', function (ev) {
+      var dy = touchY - ev.touches[0].clientY;
+      if (dy > 30) arm(); else if (dy < -30) cancel();
+    }, { passive: true });
   }
 
   /* ---------- Welcome background video ---------- */
