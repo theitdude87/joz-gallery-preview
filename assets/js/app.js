@@ -53,7 +53,6 @@
 
   /* ---------- Per-language site root ---------- */
   function initSite(root) {
-    var catalog = JSON.parse(root.querySelector('[data-catalog]').textContent);
     var i18n = JSON.parse(root.querySelector('[data-i18n]').textContent);
     var toastEl = root.querySelector('[data-toast]');
     var toastTimer;
@@ -65,6 +64,11 @@
       toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2600);
     }
     root.toast = toast;
+
+    // The welcome page has no header, cart or search.
+    var catalogEl = root.querySelector('[data-catalog]');
+    if (!catalogEl) return;
+    var catalog = JSON.parse(catalogEl.textContent);
 
     /* Dialogs */
     function dialog(name) { return root.querySelector('[data-dialog="' + name + '"]'); }
@@ -176,6 +180,76 @@
     /* Hero slider */
     var slider = root.querySelector('[data-slider]');
     if (slider) initSlider(slider, root);
+
+    /* Section pages: tabs + swipe to the next/previous section */
+    var sectionPage = root.querySelector('[data-section-page]');
+    if (sectionPage) initSectionSwipe(sectionPage, root);
+  }
+
+  var VT_KEY = 'joz_vt';
+  function rememberDirection(dir) {
+    try { sessionStorage.setItem(VT_KEY, dir); } catch (e) { /* ignore */ }
+  }
+
+  function initSectionSwipe(page, root) {
+    var rtl = root.getAttribute('dir') === 'rtl';
+    var tabs = Array.prototype.slice.call(page.querySelectorAll('.sec-tab'));
+    var currentIndex = tabs.findIndex(function (t) { return t.getAttribute('aria-current') === 'page'; });
+    var current = tabs[currentIndex];
+
+    // Bring the current tab into view without moving the page.
+    function centreTab() {
+      if (!current || root.hidden) return;
+      var list = current.closest('[data-tabs]');
+      var r = current.getBoundingClientRect(), lr = list.getBoundingClientRect();
+      list.scrollLeft += (r.left + r.width / 2) - (lr.left + lr.width / 2);
+    }
+    centreTab();
+    root.centreTab = centreTab;
+
+    // Direction for the slide animation on the next page.
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { rememberDirection(i > currentIndex ? 'forward' : 'backward'); });
+    });
+    page.querySelectorAll('[data-nav-dir]').forEach(function (a) {
+      a.addEventListener('click', function () { rememberDirection(a.getAttribute('data-nav-dir') === 'next' ? 'forward' : 'backward'); });
+    });
+
+    var area = page.querySelector('[data-swipe-area]');
+    var startX = 0, startY = 0, startT = 0, tracking = false;
+    area.addEventListener('touchstart', function (ev) {
+      if (ev.touches.length !== 1 || ev.target.closest('.offers__rail, input, select, textarea, dialog')) { tracking = false; return; }
+      tracking = true;
+      startX = ev.touches[0].clientX; startY = ev.touches[0].clientY; startT = Date.now();
+    }, { passive: true });
+    area.addEventListener('touchend', function (ev) {
+      if (!tracking) return;
+      tracking = false;
+      var t = ev.changedTouches[0];
+      var dx = t.clientX - startX, dy = t.clientY - startY;
+      // A clear sideways flick: far enough, mostly horizontal, reasonably quick.
+      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8 || Date.now() - startT > 800) return;
+      var forward = rtl ? dx > 0 : dx < 0;
+      rememberDirection(forward ? 'forward' : 'backward');
+      window.location.href = page.getAttribute(forward ? 'data-next' : 'data-prev');
+    }, { passive: true });
+  }
+
+  /* ---------- Welcome background video ---------- */
+  function syncVideos() {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var saveData = navigator.connection && navigator.connection.saveData;
+    document.querySelectorAll('[data-welcome-video]').forEach(function (v) {
+      var root = v.closest('[data-site]');
+      if (reduce || saveData || (root && root.hidden)) { v.pause(); return; }
+      if (!v.getAttribute('src')) {
+        var portrait = window.matchMedia('(orientation: portrait)').matches;
+        v.src = v.getAttribute(portrait ? 'data-portrait' : 'data-wide');
+        v.addEventListener('playing', function () { v.classList.add('is-playing'); });
+      }
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { /* autoplay refused: the poster stays */ });
+    });
   }
 
   function initSlider(slider, root) {
@@ -248,6 +322,8 @@
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
       save(LANG_KEY, lang);
+      sites.forEach(function (s) { if (!s.hidden && s.centreTab) s.centreTab(); });
+      syncVideos();
     }
     var saved = load(LANG_KEY, 'ar');
     if (saved !== 'ar' && saved !== 'en') saved = 'ar';
@@ -275,5 +351,5 @@
   var sites = Array.prototype.slice.call(document.querySelectorAll('[data-site]'));
   sites.forEach(initSite);
   initCountdowns();
-  if (PREVIEW) initPreview(sites);
+  if (PREVIEW) initPreview(sites); else syncVideos();
 })();
