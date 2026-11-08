@@ -1,14 +1,11 @@
-# Joz Gallery for Home: design preview
+# Joz Gallery for Home: storefront preview
 
-Static preview of the storefront design for **Joz Gallery for Home (جوز كاليري)**.
-Arabic (RTL) by default, with an English switch on every page.
+Static preview of the new storefront, built from the Laravel store
+(github.com/Alsaadi-Hussein/joz-gallery, branch `claude/port-preview-design`) with demo data.
+Arabic (RTL) by default, with English under `/en`.
 
 Live: https://theitdude87.github.io/joz-gallery-preview/
 
-Pages:
-- `index.html`: welcome page with a background video, "Enter the store" and the contact links
-- `shop.html`: store home (sections, offers, best sellers, new in, Instagram/WhatsApp)
-- `section-*.html`: one page per section. Swipe sideways on a phone to move to the next or previous section.
-
-The background video is a placeholder made from the brand photos, and the product and room photos are demo images from Unsplash. They will be replaced with the store's own video and photos.
-This repository holds the generated preview only. It is built with `php tools/build-preview.php --site=...` from the main project.
+The store's server parts are replaced in the browser by `static-preview.js`: the cart,
+delivery fees and coupon are worked out from the demo catalog, search runs on it, and the
+order is sent on WhatsApp. Filters and sorting need the server and are hidden here.
